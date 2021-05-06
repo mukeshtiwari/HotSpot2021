@@ -177,8 +177,58 @@ Definition schulze_winner
 \end{minted}
 
 
- 
- \section{Condorcet Winner}
+\section{Properties of Schulze Method}
+	 We have a boolean function,  \textit{schulze\_winner},  that 
+	 elects the winner,  the key question is that how do we know that 
+	 this winner is indeed the real winner,  intended by the voters, and 
+	 not because of the software bug in the implemetation.  In our 
+	 original paper, we have given two definitions of 
+	 winners, one in Prop (logical) and one in Type (computational) and 
+	 proved that both implemetations are equivalent. 
+	  
+\begin{minted}{coq}
+Definition wins_prop (c: cand) : Prop := 
+ forall d: cand, exists k: Z,
+  Path k c d /\ 
+ (forall l, Path l d c -> l <= k)
+	 
+Definition wins_type c : Type :=
+ forall d : cand, existsT (k : Z),
+ ((PathT k c d) *
+  (existsT (f : (cand * cand) -> bool), 
+  f (d, c) = true /\ coclosed (k + 1) f))
+  
+Lemma wins_prop_type : forall c, 
+ wins_prop c -> wins_type c.
+Proof.  (* proof terms omitted *) Qed. 
+
+Lemma wins_type_prop : forall c, 
+ wins_type c -> wins_prop c.  
+Proof.  (* proof terms omitted *) Qed. 	 
+\end{minted}
+
+At this point, the curious author would be wondering why do we 
+need to have two definitions for the same thing, but one thing 
+she would definately agree that the defintion of \textit{wins\_prop} is easier to 
+inspect and understand compared to the definition of \textit{wins\_type}.
+  The goal 
+of our formalisation was two fold: i) extracting an OCaml 
+code from it and using the OCaml code 
+to count the ballots from real world elections and ii)
+making it accessble to everyone.  To achieve the 
+first goal, we defined a (complicated) definition in Type 
+and for the secod goal, we defined a (simple) definition in Prop. 
+All the reader has to do is inspect the simple logical defintion 
+\textit{wins\_prop} to ensure that it correctly captures the notion 
+of winner,  without understanding the the complicated computable 
+definition of \textit{wins\_type}.  The proof that these two definitions 
+are equivalent is delegated to the Coq theorem prover, so the reader 
+has to do is replay the proofs of  \textit{wins\_prop\_type} and 
+\textit{wins\_type\_prop}.  Coq's extraction mechanism erases all the (logical) terms in sort Prop while 
+keeps all the (computational) terms in sort Type. 
+
+
+ \subsection{Condorcet Winner}
 	A \textit{Condorcet winner} is a candidate who beats every other candidate in a 
 	pairwise comparison, also known as head to head competition. 
 	Recall from the previous section that the margin matrix, $marg$, 
@@ -265,7 +315,7 @@ Proof of the last two lemmas is by induction on the path length, i.e. n \cite{Ca
 
 
 
-\section{Reversal Symmetry\footnote{It is not complete and still ongoing.}}
+\subsection{Reversal Symmetry\footnote{It is not complete and still ongoing.}}
  The \textit{Reversal symmetry} is a voting method criterion which states that if the
  voting method has produced a unique 
   winner, say, $c$ based on the cast ballots, then $c$ should not be elected if the 
