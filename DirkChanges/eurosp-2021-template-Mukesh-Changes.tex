@@ -1,0 +1,511 @@
+\documentclass[compsoc,conference,a4paper,10pt,times]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{bmpsize}
+\usepackage{xcolor}
+\usepackage{lipsum}
+\usepackage{minted}
+\usepackage[colorlinks=true,urlcolor=black]{hyperref}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Machine Checked Properties of the Schulze Method}
+
+\author{\IEEEauthorblockN{Mukesh Tiwari}
+\IEEEauthorblockA{\textit{ School of Computing and Information Systems} \\
+\textit{University of Melbourne}\\
+Melbourne, Australia \\
+mukesh.tiwari@unimelb.edu.au}
+\and
+\IEEEauthorblockN{Dirk Pattinson}
+\IEEEauthorblockA{\textit{Research School of Computer Science} \\
+\textit{Australian National University}\\
+Canberra, Australia\\
+dirk.pattinson@anu.edu.au}
+}
+
+\maketitle
+
+\begin{abstract}
+The correctness of electronic vote-counting software is 
+crucial in establishing the trust in electronic voting. 
+However, most vote-counting programs, used in 
+various jurisdiction for legally binding election, establish
+correctness by means of testing which is not sufficient, and often
+fails to identify rare corner cases.
+We argue that legally binding vote-counting software 
+should be formally verified and their correctness should be 
+evaluated against some well established framework from social choice theory. 
+\footnote{DP: I don't see the relation to arrow's theorem here? \textcolor{ blue}{MT: I was trying to give an example of one such possible
+framework to evaluate preferential voting schemes, but I have removed to avoid any potential confusion. }}
+
+In this work, 
+we give machine checked formal proofs that our Coq implementation of the Schulze method,
+a preferential voting method, 
+follows the Condorcet winner property. We leave the formal machine-checked proof of 
+other properties, e.g., reversal symmetry, Pareto, monotonicity, etc., for future work.  
+This is, to the best of our knowledge, the first machine-checked proof of 
+properties of the Schulze method implementation, and in fact, any preferential vote-counting 
+implementation. 
+
+
+\end{abstract}
+
+\begin{IEEEkeywords}
+formal method, electronic voting, Schulze method, 
+Condorcet winner, Coq theorem prover
+\end{IEEEkeywords}
+
+ 
+\section{Introduction}
+    The Schulze method \cite{Schulze:2011:NMC}, a preferential
+    voting method, has gained popularity in recent years
+   when it comes to electing the candidates of many open source 
+    software communities, Wikipedia, and the Pirate Parties in
+    various countries. At the time of writing, 
+    is used by more  than  60 organizations  with  more  than  900,000  eligible  
+    members  in  total \cite{schulze2020schulze}. One particular reason for this popularity is that it 
+    enjoys many desirable properties that have been  formulated in
+    social choice theory.
+    Many of these are already established in the Schulze's original paper \cite{Schulze:2011:NMC}, e.g., Condorcet winner, Pareto, reversal symmetry, monotonicty, 
+    etc. Moreover, it fails on independence of 
+    irrelevant alternatives (IIA) criterion, a consequence of the impossibility theorem \cite{arrow1950difficulty} which states that no preferential voting 
+    method can have all the properties. 
+
+    In this work, we establish that our implementation of Schulze method \cite{Pattinson:2017:SVE}
+    conforms to the Condorcet winning criterion. It is ongoing work and in  
+    future, we would like to establish that our implementation follows all the other properties, 
+    e.g. reversal symmetry, Pareto, monotonicity, etc. 
+    More importantly, it would be interesting to establish that our implementation 
+    fails on IIA criterion. The 
+    source code for this ongoing work can be accessed from the GitHub 
+    repo\footnote{\url{https://github.com/mukeshtiwari/Schulzeproperties/blob/master/Schulzeprop.v}}
+    
+    \section{The Schulze Method}
+    In this section, we give a brief overview of the Schulze method and 
+    necessary formalisation details to make it self-contained. We invite the 
+    curious reader to read our paper \cite{Pattinson:2017:SVE} for more details. 
+    
+    
+    The  method itself rests on the relative margins between two
+    candidates, i.e. the number of voters that prefer one candidate
+    over another. The margin induces an ordering between candidates,
+    where a candidate $c$ is more preferred than $d$ if more voters
+    prefer $c$ over $d$ than vice versa. One can construct simple
+    examples (see e.g. \cite{Rivest:2010:OSW}) where this order does
+    not have a maximal element (a so-called Condorcet Winner).
+    Schulze’s observation is that this ordering can be made
+    transitive by considering sequences of candidates (called
+    paths).  Given candidates $c$ and $d$, a path between $c$ and
+    $d$ is a
+    sequence of candidates $p= (c,c_{1}, \dots ,c_{n},d)$ that joins
+    $c$ and $d$, and the \emph{strength} of a path is the minimal margin
+    between adjacent nodes. This induces the generalised margin
+    between candidates $c$ and $d$ as the strength of the strongest path
+    that joins $c$ and $d$.  A candidate $c$ then wins a Schulze count if
+    the generalised margin between $c$ 
+    and any other candidate $d$ is at least as large as the
+    generalised margin between $d$ and $c$. It is known that every
+    election has a winner, but the winner may not be uniquely
+    determined (e.g. in the case where no votes have been cast at
+    all).
+    In more detail:
+
+\begin{enumerate}  
+
+\item Consider an election with a set of $t$ candidates
+    $C$ = $\{c_1,\dots,c_t\}$ and 
+	a set of $n$ votes $P$ = $\{b_1,\dots,b_n\}$. A vote
+	is a function $b: C \rightarrow \mathbb{N}$ that 
+	assigns a natural 
+	number (the preference) to each candidate.  Note that two
+  candidates may receive the same preference. 
+	We recover a strict total 
+	preorder $<_b$ on the candidates by setting $c <_b d$ if $b(c) > b(d)$, i.e. 
+	candidate $c$ is less preferred over candidate $d$ if the natural number $b(c)$ is greater
+	than the natural number $b(d)$. 
+	
+\item We construct a margin matrix $\mathrm{marg} : C \times C \to \mathbb{Z}$ as follows: 
+    given two candidates $c, d \in C$, the \emph{margin} of $c$ over $d$ is
+    the number of voters that prefer $c$ over $d$ minus the number of voters
+    that prefer $d$ over $c$. In symbols:
+\[
+  \mathit{marg} (c, d) = \sharp \lbrace b \in P \mid c >_b d \rbrace -
+            \sharp \lbrace b \in P \mid d >_b c \rbrace
+\] where $\sharp$ denotes cardinality.
+
+
+\item A directed \emph{path} from
+candidate $c$ to candidate $d$ is a sequence $p \equiv c_0, \dots, c_{w+1}$
+of candidates with $c_0 = c$ and $c_{w+1} = d$ ($w \geq 0$), and the
+\emph{strength}, $\mathrm{st}$, of path $p$ is the minimum margin of adjacent
+nodes, i.e.
+\[ \mathrm{st}(c_0, \dots, c_{w+1}) = \min \lbrace \mathrm{marg} (c_i, c_{i+1}) \mid 0 
+\leq i \leq w \rbrace. \]
+\item  A generalised margin matrix, $M$, denote the strength of the strongest path
+	between two candidates, i.e. 
+	\[ M(c, d) = \max \lbrace \mathrm{st} (p) : p \text{ is path from } c \text{ to } d\rbrace \]
+	
+\item The winning set  is defined as 
+ \[ W =  \lbrace c \in C : \forall d \in C \setminus \{c\}, M (c, d) \geq M (d, c) \rbrace\]
+
+\end{enumerate}
+
+
+Our Coq formalisation models the set of candidates as a type.
+Moreover, it postulates that the type of candidates 
+is finite and non-empty with decidable equality. For our purpose, 
+the easiest way of stipulating that a type be finite is to require existence of a 
+list containing all inhabitants of this type \cite{10.1145/2808098.2808102}.
+
+ \begin{minted}{coq}
+Parameter cand : Type.
+Parameter cand_all : list cand.
+Hypothesis cand_fin : 
+ forall c: cand, In c cand_all.
+Hypothesis cand_not_nil : 
+ cand_all <> nil.
+Hypothesis dec_cand : 
+ forall n m : cand, {n = m} + {n <> m}.
+
+
+\end{minted}
+
+One easy way to achieve all of the above is to implement
+\texttt{cand} as an indictive type with one nullary constructor for
+each candidate.
+
+We define a boolean function (step 5) that determines 
+(the Schulze) election winners based on 
+the generalised margin matrix (step 4). ($M \text{ } \mathrm{marg} \text{ } 
+(\mathrm{length} \text{ } \mathrm{cand\_all}) \text{ } c \text{ } d$ 
+in the $\mathrm{schulze\_winner}$ definition is Coq encoding of the generalised margin matrix, 
+$M \text{ } (c, \text{ }d)$, defined in step 4. The syntactic differences between these two 
+notations do not matter for this discussion.)
+\footnote{DP: which syntactic differences? \textcolor{ blue}{MT: I am talking about $M \text{ } \mathrm{marg} \text{ } 
+(\mathrm{length} \text{ } \mathrm{cand\_all}) \text{ } c \text{ } d$  and  $M \text{ } (c, \text{ }d)$}}
+\footnote{DP: why a boolean function and not a proposition? \textcolor{blue}{MT: Nothing specific about the boolean function but I preferred it
+because it defines the Schulze winner in terms of generalised margin matrix, which is already explained above (step 4).  Therefore, the reader can 
+clearly establish the Coq definition and the explanation we gave in step 4, which may or may not be the case in Prop definition.}}
+ \begin{minted}{coq}
+Definition schulze_winner 
+  (marg : cand * cand -> Z) 
+  (c : cand) := forallb (fun d => 
+  (M marg (length cand_all) d c) <=? 
+  (M marg (length cand_all) c d))
+  cand_all.
+\end{minted}
+
+
+\section{Properties of Schulze Method}
+	 We have a boolean function,  \textit{schulze\_winner},  that 
+	 elects the winner,  the key question is that how do we know that 
+	 this winner is indeed the real winner,  intended by the voters, and 
+	 not because of the software bug in the implemetation.  In our 
+	 original paper, we have given two definitions of 
+	 winners, one in Prop (logical) and one in Type (computational) and 
+	 proved that both implemetations are equivalent. 
+   \footnote{DP: How do they relate to the boolean function above? \textcolor{ blue}{MT:  It seems that this section is edited but previously in this section, 
+   I had explained the rationale for Prop level and Type level.  Moreover,  there was a paragraph explaining the connection between boolean function, schulze\_winner, and 
+   type-level function,  wins\_type. }}
+   \footnote{DP: the typle level definition can't be understood
+   without context, e.g. what does co-closed mean?  \textcolor{blue}{MT: I have written a very abstract explanation of coclosed, but we want to expand on it, then it would be better to explain the whole thing and I should retract the claim 
+   about inviting the reader to read our paper from ITP.}}
+	  
+\begin{minted}{coq}
+Definition wins_prop (c: cand) : Prop := 
+ forall d: cand, exists k: Z,
+  Path k c d /\ 
+ (forall l, Path l d c -> l <= k)
+	 
+Definition wins_type c : Type :=
+ forall d : cand, existsT (k : Z),
+ ((PathT k c d) *
+  (existsT (f : (cand * cand) -> bool), 
+  f (d, c) = true /\ coclosed (k + 1) f))
+\end{minted}
+
+\noindent
+The definition of \textit{coclosed} asserts that
+paths from every candidate to the winner 
+is not stronger than the vice versa, i.e.
+if a candidate $c$ is the winner and the strength 
+of the strongest path from $c$ to a candidate,  say, $d$ is $k$, 
+then all the paths from $d$ to $c$ will less than or equal to $k$.
+
+
+
+  
+\begin{minted}{coq}  
+Lemma wins_prop_type : forall c, 
+ wins_prop c -> wins_type c.
+Proof.  ... Qed. 
+
+Lemma wins_type_prop : forall c, 
+ wins_type c -> wins_prop c.  
+Proof.  ... Qed. 	 
+\end{minted}
+
+The reason for two (rather than one) definitions of winning is that
+the propositional formulation is easier to inspect for correctness.
+Then again, the type level definition carries more information that
+can be extracted, whereas the type-level definition carries
+enough information that can be individually verified to corroborate
+the correctness of the run of the algorithm, given the initial
+datas\footnote{\textcolor{ blue}{MT: It is very condensed version of what I wrote previously, but  I did not understand, "given the initial datas". What is initial datas?}.}.   
+of\footnote{\textcolor{ blue}{MT: It does not make any sense from here and possibly can go away because you have already given the 
+ rationale for having two definitions, one in Prop and one in Type, above, though very condensed.}} our formalisation was two fold: i) extracting an OCaml 
+code from it and using the OCaml code 
+to count the ballots from real world elections and ii)
+making it accessible to everyone.  
+\footnote{DP: What do you mean by this? \textcolor{ blue}{MT:  You have edited this section and the point, I am trying to convey by saying that 
+ our goal is make the formalisation accessible for everyone,  is  that the reader, having some basic understanding of logic, 
+ has to inspect our definitions in the Prop and convince herself that it indeed captures the notion of winner (or loser).  } }
+To achieve the 
+first goal, we use an elaborate  definition of winning at the type
+level,
+and for the second goal, we have a (simple) definition in Prop. 
+All the reader has to do is inspect the simple logical defintion 
+\textit{wins\_prop} to ensure that it correctly captures the notion 
+of winner,  without understanding the more complex 
+definition of \textit{wins\_type}.  The proof that these two definitions 
+are equivalent is established in Coq, so the reader 
+has to do is replay the proofs of  \textit{wins\_prop\_type} and 
+\textit{wins\_type\_prop}.  Coq's extraction mechanism erases all the (logical) terms in sort Prop while 
+keeps all the (computational) terms in sort Type. 
+
+
+ \subsection{Condorcet Winner}
+	A (weak) \textit{Condorcet winner} is a candidate who beats or ties every other candidate in a 
+	pairwise comparison, also known as head to head competition. 
+	Recall from the previous section that the margin matrix,
+  $\mathrm{marg}$, 
+	stores exactly this data for every pair of candidates.
+	Therefore, we define the Condorcet winner in Coq:
+
+\begin{minted}{coq}
+Definition condorcet_winner 
+ (marg : cand * cand -> Z) 
+ (c : cand) := forall d, 
+ marg (c, d) >= 0.
+\end{minted}
+\footnote{DP: comment on strict Condorcet vs weak Condorcet
+relatively to the margin $\geq$ or $>$? \textcolor{blue}{MT: I tweaked it to say that we are talking about weak Condorcet winner.}}
+
+  Informally, the definition,  $\mathrm{condorcet\_winner}$ states that 
+  if a candidate $c$  is the Condorcet winner, then they are
+  ranked equal or higher against
+  every other candidate in more ballots than the vice versa. 
+  Our goal is to establish that if there is a 
+  Condorcet winner, then the Schulze method
+  elects it. We formally state our intent 
+  in Coq as:
+ 	
+\begin{minted}{coq}
+ Lemma condorcet_winner_implies_winner 
+    (marg : cand * cand -> Z)
+    (c : cand) : 
+    condorcet_winner marg c -> 
+    schulze_winner marg c = true. 
+Proof.  ... Qed.
+\end{minted}
+\footnote{DP: Why use the boolean function? And if the boolean
+function is used, why are the propositional and type level functions
+given earlier? \textcolor{ blue}{MT: There is nothing specific about boolean function and we can replace it by the Prop definition (or the Type definition).  The reason for 
+boolean fuction is that in the beginning I introduced the definition of Schulze's Winner as a boolean function to the reader, so I continued with it to let the reader make a connection 
+between the definition,  schulze\_winner, I gave previously and Condorcet winner (but I see that our definition of Condorcet winner is in Prop). }}
+\footnote{DP: Proof terms omitted can be omitted :-) \textcolor{ blue}{MT:  Replaced by triple dots to convey the proof terms}}
+
+  		
+ The proof of $condorcet\_winner\_implies\_winner$ hinges on the two key observations:
+ 
+ \begin{enumerate}
+  \item If a candidate $c$ is the Condorcet winner, then the generalised margin (matrix) 
+  between $c$
+  and every other candidate, say, $d$ would be greater than or equal to 0, i.e. 
+  $M \text{ } (c, \text{ }d) \geq 0$.
+  
+  \item If a candidate $c$ is the Condorcet winner, then the generalised margin  (matrix)
+  between every other candidate, say, $d$ and $c$ would be less than or equal to 0, 
+  $M \text{ } (d, \text{ }c) \leq 0$.
+ \end{enumerate}
+ 
+ 
+ These two key observations make the proof of the lemma
+ $\mathrm{condorcet\_winner\_implies\_winner}$ 
+ trivial because we have $M \text{ } (d, \text{ }c) \leq 0$  and
+  $M \text{ } (c, \text{ }d) \geq 0$, hence $M \text{ } (d, \text{ }c)  \leq 
+   M \text{ } (c, \text{ }d)$. Intuitively, 
+ if a candidate $c$ is the Condorcet winner, then the strongest path between her and every other 
+ candidate, say, $d$ would be either a direct path or a more stronger path 
+ via some other intermediate candidates (proof by induction on the path length). 
+ In both cases, we have the generalised margin between 
+ $c$ and the other candidate $d$ is greater than or equal to 0. 
+ Similarly, for the second observation. We encode these two key observations in 
+ Coq:
+ 
+ \begin{minted}{coq}
+Lemma first_key_observation : 
+ forall c d n marg, 
+ condorcet_winner c marg -> 
+ M marg n c d >= 0.
+Proof.   ...  Qed.
+
+Lemma second_key_observation : 
+ forall c d n marg, 
+ condorcet_winner c marg -> 
+ M marg n d c <= 0.
+Proof.  ...  Qed. 
+ \end{minted}
+
+ \footnote{DP: again 'proof terms omitted' doesn't convey
+ information.  \textcolor{blue}{ MT:  Addressed }}
+
+Proof of the last two lemmas is by induction on the path length, i.e. n \cite{Carre:1971:ANR}. 
+
+
+\subsection{Reversal Symmetry}\footnote{It is not complete and still ongoing.}
+ \textit{Reversal symmetry} is a voting method criterion which states that if the
+ voting method has produced a unique 
+  winner, say, $c$ based on the cast ballots, then $c$ should not be elected if the 
+ individual choices were reversed. 
+ In context of the Schulze method, we first need to define the unique winner, and ballot reversal. 
+ 
+ \begin{minted}{coq}
+ Definition unique_winner 
+ (marg : cand * cand -> Z) 
+ (c : cand) :=
+ schulze_winner marg  c = true /\
+ (forall d, d <> c -> 
+  schulze_winner marg d = false).
+\end{minted}  
+\noindent
+Informally, the definition of \textit{unique\_winner} states that a 
+candidate $c$ is a unique winner
+if it wins the election and every candidate 
+other than $c$ loses the election.
+We capture the ballot reversal in terms of margin matrix. For any given ballot set $P$, 
+the margin between two candidates $c$ and $d$ is: 
+\[
+  \mathrm{marg}(c, d) = \sharp \lbrace b \in P \mid c >_b d \rbrace -
+            \sharp \lbrace b \in P \mid d >_b c \rbrace
+\] 
+
+\noindent
+If we reverse the individual choices in every ballot, the new margin
+matrix, denoted as $\mathrm{rev\_marg}$, would be:
+
+\[
+  \mathrm{rev\_marg}(c, d) = -  \mathrm{marg} (c, d)  
+\]    
+
+\noindent
+The connection between $\mathrm{rev\_marg}$ and $\mathrm{marg}$ is very intuitive, but it can be understood 
+by considering a hypothetical single ballot election. Let's assume that we have 
+a single ballot $(A, 1); (B, 2); (C, 3)$ and the interpretation is 
+that $A$ is strictly preferred over $B$, and $B$ is strictly preferred over $C$ 
+(but we do not need strict preferences to have this property).  The margin matrix
+constructed from this ballot is: 
+
+\[
+\bordermatrix{ & A & B & C \cr
+      A & 0 & 1 & 1 \cr
+      B & -1 & 0 & 1 \cr
+      C & -1 & -1 & 0 }
+      \]
+    
+\noindent      
+After reversing the original ballot, we get $(A, 3); (B, 2); (C, 1)$ and 
+the margin matrix is:
+\[
+\bordermatrix{ & A & B & C \cr
+      A & 0 & -1 & -1 \cr
+      B & 1 & 0 & -1 \cr
+      C & 1 & 1 & 0 }
+      \]
+
+
+\noindent
+It is clearly evident from this example that the 
+connection between $\mathrm{rev\_marg}$ and $\mathrm{marg}$  holds.
+We capture this connection in Coq as:
+
+\begin{minted}{coq}
+Definition rev_marg 
+   (marg : cand -> cand -> Z) 
+   (c d : cand) := -marg c d.
+\end{minted}
+
+\noindent
+
+
+Finally, the reversal symmetry property can be expressed in Coq as: 
+\begin{minted}{coq}
+Lemma reversal_symmetry : forall marg c, 
+  unique_winner marg c ->
+  schulze_winner (rev_marg marg) c = 
+  false.
+Proof. 
+ (* still ongoing *)
+\end{minted}
+
+\noindent
+The lemma $\mathrm{reversal\_symmetry}$ expresses that if a candidate $c$ is the unique 
+winner, with respect to $\mathrm{marg}$ computed from some ballot set $P$, then she is 
+a loser with respect to $\mathrm{rev\_marg}$, computed from reversing all the entries 
+in the ballot set $P$.
+
+\noindent
+The proof this lemma is fairly straight forward \cite{Schulze:2011:NMC}, but 
+Schulze's original paper assumes a key property which turns out to be very difficult to prove, 
+at least in our encoding, in Coq. The key property is: if $M$ 
+is the generalised margin 
+matrix (step 4), computed using the margin matrix $\mathrm{marg}$
+and $\mathrm{M\_rev}$ is the generalised 
+margin matrix, computed using the margin matrix $\mathrm{rev\_marg}$, then 
+$M\_M\_\mathrm{rev}: \forall \text{ } c \text{ } d,  M(c, d) =
+M\_\mathrm{rev} (d, c)$ holds. Currently, 
+we do not have the proof of $M\_M\_\mathrm{rev}$ in Coq, but we managed to prove 
+another property, $\mathrm{path\_with\_rev\_marg}$
+\footnote{DP: more detail. \textcolor{blue}{MT: explained more about it in the next line.}}.  It states that if there is a path from 
+$c$ to $d$ of strength $k$, with respect to $\mathrm{marg}$, then we have 
+a path of same strength $k$ from $d$ to $c$, with respect to
+$\mathrm{rev\_marg}$. 
+If this path from $c$ to $d$ happens to be the strongest path (step 4), 
+then we can prove $M\_M\_\mathrm{rev}$ \footnote{The challenge in our encoding 
+is proving that the strength of the strongest path is $\geq  M(c, d)$ and 
+the strength of all paths is $\leq M(c, d)$ to infer the equality, 
+i.e. strength of the strongest path $= M(c, d)$}.  The lemma $\mathrm{path\_with\_rev\_marg}$ can be 
+combined with 
+some other properties to complete the proof of $M\_M\_\mathrm{rev}$. 
+
+\begin{minted}{coq}
+Lemma path_with_rev_marg :
+  forall k marg c d,
+  Path marg k c d <->  
+  Path (rev_marg marg) k d c.
+Proof.  ... Qed.
+\end{minted}
+\footnote{DP: proofs omitted doesn't add information \textcolor{ blue}{MT: replaced by triple dots}}
+
+\noindent
+$\mathrm{Path}$ is an inductive datatype that exactly captures the notion of 
+sequence of nodes between two candidates (step 3). More elaborately, 
+$\mathrm{Path} \text{ }k \text{ }marg \text{ }c \text{ }d$ a path $p$, sequence of candidates 
+$p= (c,c_{1}, \dots ,c_{w},d)$, that joins $c$ and $d$ and the strength of 
+p, $\mathrm{st}(p) =  \min \lbrace \mathrm{marg} (c_i, c_{i+1}) \mid 0 
+\leq i \leq w \rbrace$, is greater than or equal to $k$. 
+
+\noindent
+
+
+\bibliography{thesis}
+\bibliographystyle{IEEEtran}
+
+\end{document}
