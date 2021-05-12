@@ -246,6 +246,17 @@ Definition wins_type c : Type :=
 \end{minted}
 
 \noindent
+$\mathrm{Path}$ is an inductive datatypes that exactly captures the notion of 
+sequence of nodes between two candidates (step 3). 
+More elaborately, 
+$\mathrm{Path} \text{ }k \text{ }marg \text{ }c \text{ }d$ a path $p$, sequence of candidates 
+$p= (c,c_{1}, \dots ,c_{w},d)$, that joins $c$ and $d$ and the strength of 
+p, $\mathrm{st}(p) =  \min \lbrace \mathrm{marg} (c_i, c_{i+1}) \mid 0 
+\leq i \leq w \rbrace$, is greater than or equal to $k$ ($\mathrm{PathT}$ also captures 
+the same notion as $\mathrm{Path}$. The only difference is sort of $\mathrm{Path}$ is Prop 
+and sort of $\mathrm{PathT}$ is Type and exists for extraction reason, explained above).
+
+\noindent
 The definition of \textit{coclosed} asserts that
 paths from every candidate to the winner 
 is not stronger than the vice versa, i.e.
@@ -512,13 +523,7 @@ Lemma path_with_rev_marg :
 
 \end{minted}
 
-\noindent
-$\mathrm{Path}$ is an inductive datatype that exactly captures the notion of 
-sequence of nodes between two candidates (step 3). More elaborately, 
-$\mathrm{Path} \text{ }k \text{ }marg \text{ }c \text{ }d$ a path $p$, sequence of candidates 
-$p= (c,c_{1}, \dots ,c_{w},d)$, that joins $c$ and $d$ and the strength of 
-p, $\mathrm{st}(p) =  \min \lbrace \mathrm{marg} (c_i, c_{i+1}) \mid 0 
-\leq i \leq w \rbrace$, is greater than or equal to $k$. 
+
 
 
 
