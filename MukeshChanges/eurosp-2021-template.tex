@@ -62,19 +62,22 @@ Condorcet winner, Coq theorem prover
 
  
 \section{Introduction}
-    The Schulze method \cite{Schulze:2011:NMC}, a preferential voting method, in the recent year 
-    has gained a lot of popularity in electing the candidates of many open source 
-    software communities, Wikipedia, and the Pirate Party of various countries, as of the writing it 
+   The Schulze method \cite{Schulze:2011:NMC}, a preferential
+    voting method, has gained popularity in recent years
+   when it comes to electing the candidates of many open source 
+    software communities, Wikipedia, and the Pirate Parties in
+    various countries. At the time of writing, 
     is used by more  than  60 organizations  with  more  than  900,000  eligible  
     members  in  total \cite{schulze2020schulze}. One particular reason for this popularity is that it 
-    has a lot of nice properties, from social choice theory perspective, and many of 
-    these important properties are already established in the Schulze's original paper \cite{Schulze:2011:NMC}, e.g., Condorcet winner, Pareto, reversal symmetry, monotonicty, 
+    enjoys many desirable properties that have been  formulated in
+    social choice theory.
+    Many of these are already established in the Schulze's original paper \cite{Schulze:2011:NMC}, e.g., Condorcet winner, Pareto, reversal symmetry, monotonicty, 
     etc. Moreover, it fails on independence of 
     irrelevant alternatives (IIA) criterion, a consequence of the impossibility theorem \cite{arrow1950difficulty} which states that no preferential voting 
     method can have all the properties. 
 
     In this work, we establish that our implementation of Schulze method \cite{Pattinson:2017:SVE}
-    follows Condorcet winning criterion. It is ongoing work and in  
+    conforms to the Condorcet winning criterion. It is ongoing work and in  
     future, we would like to establish that our implementation follows all the other properties, 
     e.g. reversal symmetry, Pareto, monotonicity, etc. 
     More importantly, it would be interesting to establish that our implementation 
