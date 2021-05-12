@@ -254,13 +254,14 @@ $p= (c,c_{1}, \dots ,c_{w},d)$, that joins $c$ and $d$ and the strength of
 p, $\mathrm{st}(p) =  \min \lbrace \mathrm{marg} (c_i, c_{i+1}) \mid 0 
 \leq i \leq w \rbrace$, is greater than or equal to $k$ ($\mathrm{PathT}$ also captures 
 the same notion as $\mathrm{Path}$. The only difference is sort of $\mathrm{Path}$ is Prop 
-and sort of $\mathrm{PathT}$ is Type and exists for extraction reason, explained above).
+and sort of $\mathrm{PathT}$ is Type and these two definitions exist for extraction purpose,  
+terms of sort Prop are erased and terms of sort Type appear in the OCaml code).
 
 \noindent
 The definition of \textit{coclosed} asserts that
 paths from every candidate to the winner 
 is not stronger than the vice versa, i.e.
-if a candidate $c$ is the winner and the strength 
+if a candidate, say, $c$ is the winner and the strength 
 of the strongest path from $c$ to a candidate,  say, $d$ is $k$, 
 then all the paths from $d$ to $c$ will less than or equal to $k$.
 
