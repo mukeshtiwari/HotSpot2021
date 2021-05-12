@@ -33,17 +33,18 @@ dirk.pattinson@anu.edu.au}
 \maketitle
 
 \begin{abstract}
-The correctness of electronic vote-counting software programs is 
-crucial in establishing the trust of people in electronic voting. 
-However, most of these vote-counting programs, used in 
+The correctness of electronic vote-counting software is 
+crucial in establishing the trust in electronic voting. 
+However, most vote-counting programs, used in 
 various jurisdiction for legally binding election, establish
-the correctness by means of testing which is not sufficient and leaves much to be desired. 
-Therefore, we propose that legally binding vote-counting software 
-programs should be formally verified and its correctness should be 
-evaluated against some well established framework from social choice theory. 
+correctness by means of testing which is not sufficient, and often
+fails to identify rare corner cases.
+We argue that legally binding vote-counting software 
+should be formally verified and their correctness should be 
+evaluated against some well established framework from social choice theory
 
 In this work, 
-we formally prove (machine-checked) that our Coq implementation of the Schulze method,
+we give machine checked formal proofs that our Coq implementation of the Schulze method,
 a preferential voting method, 
 follows the Condorcet winner property. We leave the formal machine-checked proof of 
 other properties, e.g., reversal symmetry, Pareto, monotonicity, etc., for future work. 
