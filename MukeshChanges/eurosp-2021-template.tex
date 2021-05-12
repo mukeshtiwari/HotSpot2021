@@ -203,8 +203,7 @@ We have a boolean function,  \textit{schulze\_winner},  that
 elects the winner, but what is the evidence that 
 this winner is indeed the real winner,  intended by the voters and 
 not because of (software) bugs in the implementation. 
-Therefore, to address this issue of
-evidence, we give two definitions \cite{Pattinson:2017:SVE} of 
+Therefore,  we give two definitions \cite{Pattinson:2017:SVE} of 
 winner, one in Prop (logical definition \textit{wins\_prop}) 
 and one in Type (computational definition \textit{wins\_type}) 
 and a proof that both definitions are equivalent. The reason 
@@ -243,6 +242,12 @@ Definition wins_type c : Type :=
  ((PathT k c d) *
   (existsT (f : (cand * cand) -> bool), 
   f (d, c) = true /\ coclosed (k + 1) f))
+  
+Lemma wins_prop_type : forall c, 
+ wins_prop c -> wins_type c.
+   
+Lemma wins_type_prop : forall c, 
+ wins_type c -> wins_prop c.    
 \end{minted}
 
 \noindent
@@ -254,25 +259,14 @@ $p= (c,c_{1}, \dots ,c_{w},d)$, that joins $c$ and $d$ and the strength of
 p, $\mathrm{st}(p) =  \min \lbrace \mathrm{marg} (c_i, c_{i+1}) \mid 0 
 \leq i \leq w \rbrace$, is greater than or equal to $k$ ($\mathrm{PathT}$ also captures 
 the same notion as $\mathrm{Path}$. The only difference is sort of $\mathrm{Path}$ is Prop 
-and sort of $\mathrm{PathT}$ is Type and these two definitions exist for extraction purpose,  
-terms of sort Prop are erased and terms of sort Type appear in the OCaml code).
-
-\noindent
+and sort of $\mathrm{PathT}$ is Type and these two definitions exist for the very same reason 
+we have two definitions of winner,  \textit{wins\_type} and \textit{wins\_prop}).
 The definition of \textit{coclosed} asserts that
 paths from every candidate to the winner 
 is not stronger than the vice versa, i.e.
 if a candidate, say, $c$ is the winner and the strength 
 of the strongest path from $c$ to a candidate,  say, $d$ is $k$, 
 then all the paths from $d$ to $c$ will less than or equal to $k$.
-
-\begin{minted}{coq}
-Lemma wins_prop_type : forall c, 
- wins_prop c -> wins_type c.
-   
-
-Lemma wins_type_prop : forall c, 
- wins_type c -> wins_prop c.  
-\end{minted}
 
 \noindent
 Finally, we construct a dependent type function, $wins\_loses\_type\_dec$, 
@@ -395,7 +389,7 @@ Proof of the last two lemmas is by induction on the path length, i.e. n \cite{Ca
 
 
 
-\subsection{Reversal Symmetry\footnote{It is not complete and still ongoing.}}
+\subsection{Reversal Symmetry \footnote{It is not complete and still ongoing.}}
  The \textit{Reversal symmetry} is a voting method criterion which states that if the
  voting method has produced a unique 
   winner, say, $c$ based on the cast ballots, then $c$ should not be elected if the 
