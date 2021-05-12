@@ -145,7 +145,7 @@ of candidates with $c_0 = c$ and $c_{w+1} = d$ ($w \geq 0$), and the
 \emph{strength}, $\mathrm{st}$, of path $p$ is the minimum margin of adjacent
 nodes, i.e.
 \[ \mathrm{st}(c_0, \dots, c_{w+1}) = \min \lbrace \mathrm{marg} (c_i, c_{i+1}) \mid 0 
-\leq i \leq w \rbrace. \]
+\leq i \leq w \rbrace\]
 \item  A generalised margin matrix, $M$, denote the strength of the strongest path
 	between two candidates, i.e. 
 	\[ M(c, d) = \max \lbrace \mathrm{st} (p) : p \text{ is path from } c \text{ to } d\rbrace \]
@@ -203,17 +203,45 @@ We have a boolean function,  \textit{schulze\_winner},  that
 elects the winner, but what is the evidence that 
 this winner is indeed the real winner,  intended by the voters and 
 not because of (software) bugs in the implementation. 
-Therefore,  we give two definitions \cite{Pattinson:2017:SVE} of 
-winner, one in Prop (logical definition \textit{wins\_prop}) 
-and one in Type (computational definition \textit{wins\_type}) 
-and a proof that both definitions are equivalent. The reason 
+Therefore, to address the issue of evidence,  
+we construct a dependent type function, $wins\_loses\_type\_dec$, 
+that every candidate is either winner or loser. This dependent type 
+function produces a proof, in form of 
+data (scrutiny-sheet), that why a candidate is winner or loser, and this 
+scrutiny-sheet can be used election auditors to independently establish 
+that every claim is true \cite{Arkoudas:2005:DRC}. Moreover,
+we prove that when $schulze\_winner$ returns true for a candidate, then
+there is an evidence for this candidate to be a winner, and vice-versa, 
+$schulze\_wins\_true\_type$
+
+\begin{minted}{coq}
+Lemma wins_loses_type_dec : forall c, 
+(wins_type c) + (loses_type c).
+
+Lemma schulze_wins_true_type: 
+ forall c : cand, 
+ schulze_winner c = true <-> 
+(exists x : wins_type c, 
+ wins_loses_type_dec c = inl x).
+\end{minted}
+
+
+
+
+\noindent
+The definition \textit{wins\_type},  a (computational) definition of sort Type that computes the winner,  is fairly complex 
+and not very intuitive, so we provide another definition \textit{wins\_prop}, 
+a (logical) definition of sort Prop that postulate the winner and 
+proofs, \textit{wins\_prop\_type} and \textit{wins\_type\_prop}, 
+that both definitions are equivalent  \cite{Pattinson:2017:SVE}.
+More elaborately: the reason 
 for having two definitions, one in Type and one in Prop, 
 is our twofold goal: 
 i) extracting an OCaml 
 code from the Coq code and use the OCaml code 
 to count the ballots from real world elections and ii)
-making the formalisation accessible for everyone, having some basic
-knowledge of logic, to inspect and understand that every claim 
+making the formalisation accessible for everyone 
+to inspect and understand that every claim 
 is true (this is very important in electronic voting that 
 there is nothing in my sleeves). To achieve the 
 first goal, we define a complicated computable definition, 
@@ -267,32 +295,6 @@ is not stronger than the vice versa, i.e.
 if a candidate, say, $c$ is the winner and the strength 
 of the strongest path from $c$ to a candidate,  say, $d$ is $k$, 
 then all the paths from $d$ to $c$ will less than or equal to $k$.
-
-\noindent
-Finally, we construct a dependent type function, $wins\_loses\_type\_dec$, 
-that every candidate is either winner or loser. This dependent type 
-function produces a proof, in form of 
-data (scrutiny-sheet), that why a candidate is winner or loser, and this 
-scrutiny-sheet can be used election auditors to independently establish 
-that every claim is true \cite{Arkoudas:2005:DRC}. Moreover,
-we prove that when $schulze\_winner$ returns true for a candidate, then
-there is an evidence for this candidate to be a winner, and vice-versa, 
-$schulze\_wins\_true\_type$
-
-\begin{minted}{coq}
-Lemma wins_loses_type_dec : forall c, 
-(wins_type c) + (loses_type c).
-
-Lemma schulze_wins_true_type: 
- forall c : cand, 
- schulze_winner c = true <-> 
- (exists x : wins_type c, 
-  wins_loses_type_dec c = inl x).
-
-
-\end{minted}
-
-
 
 
 Now that we have established the correctness of \textit{schulze\_winner},
