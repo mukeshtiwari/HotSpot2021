@@ -87,40 +87,54 @@ Condorcet winner, Coq theorem prover
     
     \section{Schulze Method}
     In this section, we give a brief overview of the Schulze method and 
-    necessary formalisation details to make it self-contained. However, we invite the 
+    necessary formalisation details to make it self-contained.  We invite the 
     curious reader to read our paper \cite{Pattinson:2017:SVE} for more details. 
     
     
-    The  method itself rests on the relative margins between two candidates, i.e. the number of voters that prefer one candidate over another. The margin induces an ordering between candidates, where a candidate c is more preferred than d, if more voters prefer c over d than vice versa. One can construct simple examples (see e.g. \cite{Rivest:2010:OSW}) where this order does not have 
-    a maximal element (a so-called Condorcet Winner). Schulze’s observation is that this 
-    ordering can be made transitive by considering sequences of candidates (called paths). 
-    Given candidates c and d, a path between c and d is a sequence of candidates 
-    $p= (c,c_{1}, \dots ,c_{n},d)$ that joins c and d, and the strength of a path is the 
-    minimal margin between adjacent nodes. This induces the generalised margin between 
-    candidates c and d as the strength of the strongest path that joins c and d. 
-    A candidate c then wins a Schulze count if the generalised margin between c 
-    and any other candidate d is at least as large as the generalised margin between d and c.
+    The  method itself rests on the relative margins between two
+    candidates, i.e. the number of voters that prefer one candidate
+    over another. The margin induces an ordering between candidates,
+    where a candidate $c$ is more preferred than $d$ if more voters
+    prefer $c$ over $d$ than vice versa. One can construct simple
+    examples (see e.g. \cite{Rivest:2010:OSW}) where this order does
+    not have a maximal element (a so-called Condorcet Winner).
+    Schulze’s observation is that this ordering can be made
+    transitive by considering sequences of candidates (called
+    paths).  Given candidates $c$ and $d$, a path between $c$ and
+    $d$ is a
+    sequence of candidates $p= (c,c_{1}, \dots ,c_{n},d)$ that joins
+    $c$ and $d$, and the \emph{strength} of a path is the minimal margin
+    between adjacent nodes. This induces the generalised margin
+    between candidates $c$ and $d$ as the strength of the strongest path
+    that joins $c$ and $d$.  A candidate $c$ then wins a Schulze count if
+    the generalised margin between $c$ 
+    and any other candidate $d$ is at least as large as the
+    generalised margin between $d$ and $c$. It is known that every
+    election has a winner, but the winner may not be uniquely
+    determined (e.g. in the case where no votes have been cast at
+    all).
     In more detail:
 
 \begin{enumerate}  
 
 \item Consider an election with a set of $t$ candidates
-    $C$ = $\{c1,\dots,ct\}$ and 
-	a set of $n$ votes $P$ = $\{b1,\dots,bn\}$. A vote
-	is represented as a function $b: C \rightarrow \mathbb{N}$ that 
-	assigns natural 
-	number (the preference) to each candidate. 
+    $C$ = $\{c_1,\dots,c_t\}$ and 
+	a set of $n$ votes $P$ = $\{b_1,\dots,b_n\}$. A vote
+	is a function $b: C \rightarrow \mathbb{N}$ that 
+	assigns a natural 
+	number (the preference) to each candidate.  Note that two
+  candidates may receive the same preference. 
 	We recover a strict total 
 	preorder $<_b$ on the candidates by setting $c <_b d$ if $b(c) > b(d)$, i.e. 
 	candidate $c$ is less preferred over candidate $d$ if the natural number $b(c)$ is greater
 	than the natural number $b(d)$. 
 	
-\item We construct a margin matrix $marg : C \times C \to \mathbb{Z}$ as follows: 
+\item We construct a margin matrix $\mathrm{marg} : C \times C \to \mathbb{Z}$ as follows: 
     given two candidates $c, d \in C$, the \emph{margin} of $c$ over $d$ is
     the number of voters that prefer $c$ over $d$ minus the number of voters
     that prefer $d$ over $c$. In symbols:
 \[
-  marg (c, d) = \sharp \lbrace b \in P \mid c >_b d \rbrace -
+  \mathit{marg} (c, d) = \sharp \lbrace b \in P \mid c >_b d \rbrace -
             \sharp \lbrace b \in P \mid d >_b c \rbrace
 \] where $\sharp$ denotes cardinality.
 
@@ -128,13 +142,13 @@ Condorcet winner, Coq theorem prover
 \item A directed \emph{path} from
 candidate $c$ to candidate $d$ is a sequence $p \equiv c_0, \dots, c_{w+1}$
 of candidates with $c_0 = c$ and $c_{w+1} = d$ ($w \geq 0$), and the
-\emph{strength}, $st$, of path $p$ is the minimum margin of adjacent
+\emph{strength}, $\mathrm{st}$, of path $p$ is the minimum margin of adjacent
 nodes, i.e.
-\[ st(c_0, \dots, c_{w+1}) = \min \lbrace marg (c_i, c_{i+1}) \mid 0 
+\[ \mathrm{st}(c_0, \dots, c_{w+1}) = \min \lbrace \mathrm{marg} (c_i, c_{i+1}) \mid 0 
 \leq i \leq w \rbrace. \]
 \item  A generalised margin matrix, $M$, denote the strength of the strongest path
 	between two candidates, i.e. 
-	\[ M(c, d) = \max \lbrace st (p) : p \text{ is path from } c \text{ to } d\rbrace \]
+	\[ M(c, d) = \max \lbrace \mathrm{st} (p) : p \text{ is path from } c \text{ to } d\rbrace \]
 	
 \item The winning set  is defined as 
  \[ W =  \lbrace c \in C : \forall d \in C \setminus \{c\}, M (c, d) \geq M (d, c) \rbrace\]
@@ -142,12 +156,13 @@ nodes, i.e.
 \end{enumerate}
 
 
-Our Coq formalisation models candidates as Type. Moreover, it postulates that the candidates 
-are finite and non-empty with decidable equality. For our purpose, 
+Our Coq formalisation models the set of candidates as a type.
+Moreover, it postulates that the type of candidates 
+is finite and non-empty with decidable equality.  For our purpose, 
 the easiest way of stipulating that a type be finite is to require existence of a 
 list containing all inhabitants of this type \cite{10.1145/2808098.2808102}.
 
-\begin{minted}{coq}
+ \begin{minted}{coq}
 Parameter cand : Type.
 Parameter cand_all : list cand.
 Hypothesis cand_fin : 
@@ -160,16 +175,19 @@ Hypothesis dec_cand :
 
 \end{minted}
 
+One easy way to achieve all of the above is to implement
+\texttt{cand} as an indictive type with one nullary constructor for
+each candidate.
 
-We define a boolean value function (step 5) that determines 
+
+We define a boolean function (step 5) that determines 
 (the Schulze) election winners based on 
 the generalised margin matrix (step 4). ($M \text{ } \mathrm{marg} \text{ } 
 (\mathrm{length} \text{ } \mathrm{cand\_all}) \text{ } c \text{ } d$
 in the $\mathrm{schulze\_winner}$ definition is Coq encoding of the 
 generalised margin matrix, 
 $M \text{ } (c, \text{ }d)$, defined in step 4. The syntactic differences between these 
-two definitions do not matter 
-for this discussion.)
+two notations do not matter  for this discussion.)
  \begin{minted}{coq}
 Definition schulze_winner 
   (marg : cand * cand -> Z) 
