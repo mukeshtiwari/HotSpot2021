@@ -209,7 +209,7 @@ that every candidate is either winner or loser. This dependent type
 function produces a proof, in form of 
 data (scrutiny-sheet), that why a candidate is winner or loser, and this 
 scrutiny-sheet can be used election auditors to independently establish 
-that every claim is true \cite{Arkoudas:2005:DRC}. Moreover,
+that every claim is true \cite{Arkoudas:2005:DRC, Rivest:2008:PTRS}. Moreover,
 we prove that when $schulze\_winner$ returns true for a candidate, then
 there is an evidence for this candidate to be a winner, and vice-versa, 
 $schulze\_wins\_true\_type$
@@ -231,7 +231,8 @@ Lemma schulze_wins_true_type:
 \noindent
 The definition \textit{wins\_type},  a (computational) definition of sort Type that computes the winner,  is fairly complex 
 and not very intuitive, so we provide another definition \textit{wins\_prop}, 
-a (logical) definition of sort Prop that postulate the winner and 
+a (logical) definition of sort Prop that postulate the winner, which is simple and easy to 
+understand and 
 proofs, \textit{wins\_prop\_type} and \textit{wins\_type\_prop}, 
 that both definitions are equivalent  \cite{Pattinson:2017:SVE}.
 More elaborately: the reason 
@@ -299,7 +300,7 @@ then all the paths from $d$ to $c$ will less than or equal to $k$.
 
 Now that we have established the correctness of \textit{schulze\_winner},
 i.e. it always elects the winner which is intended by the voters and 
-not because of software bugs in the implementation. However, we can push this
+not because of software bugs in the implementation.  However, we can push this
 correctness (criterion) boundary further by evaluating our Coq implementation against 
 the various properties, established in the Schulze's 
 original paper \cite{Schulze:2011:NMC}. Below, we prove that our 
